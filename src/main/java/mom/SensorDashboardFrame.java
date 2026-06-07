@@ -112,6 +112,9 @@ public class SensorDashboardFrame extends JFrame {
         }
 
         tableModel.addSensor(createdSensor);
+        SensorRuntime sensorRuntime = new SensorRuntime(createdSensor, alertPublisher);
+        sensorRuntimes.put(createdSensor.getId(), sensorRuntime);
+        showSensorWindow(sensorRuntime);
         updateStatusLabel();
         updateActionButtons();
     }
