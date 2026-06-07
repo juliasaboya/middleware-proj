@@ -7,7 +7,11 @@ public class Main {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
+
+            // pra qu serve isso?
             configureLookAndFeel();
+
+            // inicializa a UI do hub
             SensorDashboardFrame frame = new SensorDashboardFrame();
             frame.setVisible(true);
         });

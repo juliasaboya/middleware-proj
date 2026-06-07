@@ -2,6 +2,7 @@ package mom;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class SensorTableModel extends AbstractTableModel {
@@ -12,6 +13,30 @@ public class SensorTableModel extends AbstractTableModel {
     public void setSensors(List<Sensor> sensors) {
         this.sensors = new ArrayList<>(sensors);
         fireTableDataChanged();
+    }
+
+    public void addSensor(Sensor sensor) {
+        int rowIndex = sensors.size();
+        sensors.add(sensor);
+        fireTableRowsInserted(rowIndex, rowIndex);
+    }
+
+    public Sensor getSensorAt(int rowIndex) {
+        return sensors.get(rowIndex);
+    }
+
+    public void updateSensor(int rowIndex, Sensor sensor) {
+        sensors.set(rowIndex, sensor);
+        fireTableRowsUpdated(rowIndex, rowIndex);
+    }
+
+    public void removeSensor(int rowIndex) {
+        sensors.remove(rowIndex);
+        fireTableRowsDeleted(rowIndex, rowIndex);
+    }
+
+    public List<Sensor> getSensors() {
+        return Collections.unmodifiableList(sensors);
     }
 
     @Override

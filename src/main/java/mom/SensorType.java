@@ -11,6 +11,7 @@ public enum SensorType {
     private final double defaultMaximum;
     private final String unit;
 
+    // define o objeto SensorType
     SensorType(String displayName, String idPrefix, double defaultMinimum, double defaultMaximum, String unit) {
         this.displayName = displayName;
         this.idPrefix = idPrefix;
@@ -37,5 +38,10 @@ public enum SensorType {
 
     public String getUnit() {
         return unit;
+    }
+
+    @Override
+    public String toString() {
+        return displayName;
     }
 }

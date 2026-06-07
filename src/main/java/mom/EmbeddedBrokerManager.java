@@ -11,12 +11,16 @@ public class EmbeddedBrokerManager {
         if (brokerService != null && brokerService.isStarted()) {
             return;
         }
-
+        // cria o broker
         brokerService = new BrokerService();
+
+        // configurando o broker
         brokerService.setBrokerName("sensor-broker");
         brokerService.setPersistent(false);
         brokerService.setUseJmx(false);
         brokerService.addConnector(BROKER_URL);
+
+        // start no broker
         brokerService.start();
         brokerService.waitUntilStarted();
     }
@@ -28,6 +32,8 @@ public class EmbeddedBrokerManager {
 
         brokerService.stop();
         brokerService.waitUntilStopped();
+
+        // matou o  broker
         brokerService = null;
     }
 

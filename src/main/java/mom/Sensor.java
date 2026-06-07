@@ -7,6 +7,7 @@ public class Sensor {
     private double minimum;
     private double maximum;
 
+    // objeto sensor com tipo, id, valor atual, valores minimo e maximo
     public Sensor(SensorType type, String id, double currentValue, double minimum, double maximum) {
         this.type = type;
         this.id = id;
