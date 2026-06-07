@@ -16,16 +16,23 @@ import java.awt.Font;
 import java.awt.FlowLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class SensorDashboardFrame extends JFrame {
     private final EmbeddedBrokerManager brokerManager = new EmbeddedBrokerManager();
     private final SensorFactory sensorFactory = new SensorFactory();
+
+    // instancia o publisher
+    private final SensorAlertPublisher alertPublisher = new SensorAlertPublisher(EmbeddedBrokerManager.BROKER_URL);
     private final JLabel statusLabel = new JLabel("Inicializando broker...");
     private final SensorTableModel tableModel = new SensorTableModel();
     private final JButton createSensorButton = new JButton("Criar sensor");
-    private final JButton editSensorButton = new JButton("Editar sensor");
+    private final JButton editSensorButton = new JButton("Abrir sensor");
     private final JButton deleteSensorButton = new JButton("Excluir sensor");
     private final JTable sensorTable = new JTable(tableModel);
+    private final Map<String, SensorRuntime> sensorRuntimes = new LinkedHashMap<>();
+    private final Map<String, SensorMonitorFrame> sensorWindows = new LinkedHashMap<>();
 
     public SensorDashboardFrame() {
         super("Middleware Orientado a Mensagens");
@@ -74,7 +81,7 @@ public class SensorDashboardFrame extends JFrame {
         topPanel.add(actionsPanel, BorderLayout.SOUTH);
 
         createSensorButton.addActionListener(event -> openCreateSensorDialog());
-        editSensorButton.addActionListener(event -> openEditSensorDialog());
+        editSensorButton.addActionListener(event -> openSensorWindow());
         deleteSensorButton.addActionListener(event -> deleteSelectedSensor());
 
         updateActionButtons();
@@ -119,23 +126,18 @@ public class SensorDashboardFrame extends JFrame {
         updateActionButtons();
     }
 
-    private void openEditSensorDialog() {
+    private void openSensorWindow() {
         int selectedRow = sensorTable.getSelectedRow();
         if (selectedRow < 0) {
             return;
         }
 
-        Sensor existingSensor = tableModel.getSensorAt(selectedRow);
-        SensorFormDialog dialog = new SensorFormDialog(this, sensorFactory, tableModel.getSensors(), existingSensor);
-        dialog.setVisible(true);
-
-        Sensor updatedSensor = dialog.getCreatedSensor();
-        if (updatedSensor == null) {
+        SensorRuntime sensorRuntime = sensorRuntimes.get(tableModel.getSensorAt(selectedRow).getId());
+        if (sensorRuntime == null) {
             return;
         }
 
-        tableModel.updateSensor(selectedRow, updatedSensor);
-        updateStatusLabel();
+        showSensorWindow(sensorRuntime);
     }
 
     private void deleteSelectedSensor() {
@@ -157,9 +159,27 @@ public class SensorDashboardFrame extends JFrame {
             return;
         }
 
+        SensorMonitorFrame sensorWindow = sensorWindows.remove(sensor.getId());
+        if (sensorWindow != null) {
+            sensorWindow.dispose();
+        }
+
+        sensorRuntimes.remove(sensor.getId());
         tableModel.removeSensor(selectedRow);
         updateStatusLabel();
         updateActionButtons();
+    }
+
+    private void showSensorWindow(SensorRuntime sensorRuntime) {
+        Sensor sensor = sensorRuntime.getSensor();
+        SensorMonitorFrame sensorWindow = sensorWindows.get(sensor.getId());
+
+        if (sensorWindow == null || !sensorWindow.isDisplayable()) {
+            sensorWindow = new SensorMonitorFrame(sensorRuntime, () -> tableModel.notifySensorUpdated(sensor));
+            sensorWindows.put(sensor.getId(), sensorWindow);
+        }
+
+        sensorWindow.focusWindow();
     }
 
     private void handleSelectionChange(ListSelectionEvent event) {
@@ -182,6 +202,11 @@ public class SensorDashboardFrame extends JFrame {
     }
 
     private void stopBroker() {
+        for (SensorMonitorFrame sensorWindow : sensorWindows.values()) {
+            sensorWindow.dispose();
+        }
+        sensorWindows.clear();
+
         try {
             brokerManager.stop();
         } catch (Exception exception) {

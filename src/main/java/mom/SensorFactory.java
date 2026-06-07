@@ -3,6 +3,8 @@ package mom;
 import java.util.Collection;
 
 public class SensorFactory {
+
+    // reduz duplicação de regra p sugestão de ID com base nos ja criados. (serve p sensores de todos os tipos)
     public String createSuggestedId(SensorType type, Collection<Sensor> existingSensors) {
         int highestIndex = 0;
 
