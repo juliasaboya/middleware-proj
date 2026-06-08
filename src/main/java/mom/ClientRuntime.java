@@ -113,16 +113,17 @@ public class ClientRuntime {
 
         if (message instanceof TextMessage textMessage) {
             try {
-                String sensorId = textMessage.getStringProperty("sensorId");
+                String sensorType = textMessage.getStringProperty("sensorType");
+                String alertType = textMessage.getStringProperty("alertType");
                 double currentValue = textMessage.getDoubleProperty("currentValue");
                 payload = String.format(
                         Locale.US,
-                        "%s | %s | sensor=%s | leitura=%.2f | %s",
+                        "%s | Tópico %s | leitura = %.2f | Está %s da faixa estabelecida para %s",
                         timestamp(),
                         topic,
-                        sensorId,
                         currentValue,
-                        textMessage.getText()
+                        resolveCondition(alertType),
+                        resolveSensorType(sensorType)
                 );
             } catch (Exception exception) {
                 payload = timestamp() + " | " + topic + " | Falha ao ler mensagem: " + exception.getMessage();
@@ -176,5 +177,21 @@ public class ClientRuntime {
 
     private String timestamp() {
         return MESSAGE_FORMAT.format(LocalDateTime.now());
+    }
+
+    private String resolveCondition(String alertType) {
+        if ("MAXIMUM_REACHED".equals(alertType)) {
+            return "acima";
+        }
+
+        return "abaixo";
+    }
+
+    private String resolveSensorType(String sensorType) {
+        try {
+            return SensorType.valueOf(sensorType).getDisplayName();
+        } catch (Exception exception) {
+            return sensorType == null ? "sensor" : sensorType;
+        }
     }
 }
