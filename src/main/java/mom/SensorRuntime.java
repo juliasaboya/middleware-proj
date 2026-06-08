@@ -63,11 +63,11 @@ public class SensorRuntime {
     }
 
     private String resolveAlertType() {
-        if (sensor.getCurrentValue() == sensor.getMinimum()) {
+        if (sensor.getCurrentValue() < sensor.getMinimum()) {
             return "MINIMUM_REACHED";
         }
 
-        if (sensor.getCurrentValue() == sensor.getMaximum()) {
+        if (sensor.getCurrentValue() > sensor.getMaximum()) {
             return "MAXIMUM_REACHED";
         }
 
