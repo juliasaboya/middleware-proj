@@ -2,6 +2,7 @@ package mom;
 
 import javax.swing.AbstractListModel;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class DefaultTopicListModel extends AbstractListModel<String> {
@@ -16,6 +17,10 @@ public class DefaultTopicListModel extends AbstractListModel<String> {
     @Override
     public int getSize() {
         return topics.size();
+    }
+
+    public List<String> getTopics() {
+        return Collections.unmodifiableList(topics);
     }
 
     @Override
