@@ -1,9 +1,9 @@
 package mom;
 
 public enum SensorType {
-    TEMPERATURA("Temperatura", "temp", -10.0, 50.0, "C", -20.0, 80.0),
-    UMIDADE("Umidade", "umid", 20.0, 95.0, "%", 10.0, 100.0),
-    VELOCIDADE("Velocidade", "veloc", 0.0, 120.0, "km/h", 0.0, 150.0);
+    TEMPERATURA("Temperatura", "temp", -10.0, 50.0, "C", -15.0, 60.0),
+    UMIDADE("Umidade", "umid", 20.0, 95.0, "%", 15.0, 100.0),
+    VELOCIDADE("Velocidade", "veloc", 0.0, 120.0, "km/h", 0.0, 130.0);
 
     private final String displayName;
     private final String idPrefix;
