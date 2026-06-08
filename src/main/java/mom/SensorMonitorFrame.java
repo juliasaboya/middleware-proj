@@ -21,15 +21,19 @@ import java.util.Locale;
 public class SensorMonitorFrame extends JFrame {
     private final SensorRuntime sensorRuntime;
     private final Runnable onSensorUpdated;
+    private final Runnable runtimeListener = this::handleRuntimeUpdated;
     private final JLabel statusLabel = new JLabel();
+    private final JLabel simulationLabel = new JLabel();
     private final JTextField currentValueField = new JTextField(14);
     private final JTextField minimumField = new JTextField(14);
     private final JTextField maximumField = new JTextField(14);
+    private final JButton simulationToggleButton = new JButton();
 
     public SensorMonitorFrame(SensorRuntime sensorRuntime, Runnable onSensorUpdated) {
         super("Sensor " + sensorRuntime.getSensor().getId());
         this.sensorRuntime = sensorRuntime;
         this.onSensorUpdated = onSensorUpdated;
+        this.sensorRuntime.addStateListener(runtimeListener);
         configureFrame();
         buildUi();
         refreshFields();
@@ -45,6 +49,12 @@ public class SensorMonitorFrame extends JFrame {
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setSize(560, 420);
         setLocationByPlatform(true);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosed(java.awt.event.WindowEvent event) {
+                sensorRuntime.removeStateListener(runtimeListener);
+            }
+        });
     }
 
     private void buildUi() {
@@ -77,12 +87,17 @@ public class SensorMonitorFrame extends JFrame {
 
         JButton saveButton = new JButton("Salvar leitura");
         saveButton.addActionListener(event -> saveChanges());
+        simulationToggleButton.addActionListener(event -> toggleSimulation());
 
-        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        actionPanel.add(simulationToggleButton);
         actionPanel.add(saveButton);
 
         JPanel bottomPanel = new JPanel(new BorderLayout(0, 8));
-        bottomPanel.add(statusLabel, BorderLayout.NORTH);
+        JPanel statusPanel = new JPanel(new BorderLayout(0, 4));
+        statusPanel.add(simulationLabel, BorderLayout.NORTH);
+        statusPanel.add(statusLabel, BorderLayout.SOUTH);
+        bottomPanel.add(statusPanel, BorderLayout.NORTH);
         bottomPanel.add(actionPanel, BorderLayout.SOUTH);
 
         JPanel topPanel = new JPanel(new BorderLayout(0, 12));
@@ -112,6 +127,8 @@ public class SensorMonitorFrame extends JFrame {
         minimumField.setText(format(sensor.getMinimum()));
         maximumField.setText(format(sensor.getMaximum()));
         statusLabel.setText(sensorRuntime.getLastStatusMessage());
+        simulationLabel.setText(buildSimulationLabel(sensor));
+        simulationToggleButton.setText(sensorRuntime.isSimulationRunning() ? "Pausar simulacao" : "Retomar simulacao");
     }
 
     private void saveChanges() {
@@ -133,6 +150,19 @@ public class SensorMonitorFrame extends JFrame {
         }
     }
 
+    private void toggleSimulation() {
+        if (sensorRuntime.isSimulationRunning()) {
+            sensorRuntime.stopSimulation();
+        } else {
+            sensorRuntime.startSimulation();
+        }
+    }
+
+    private void handleRuntimeUpdated() {
+        refreshFields();
+        onSensorUpdated.run();
+    }
+
     private void showValidationError(String message) {
         JOptionPane.showMessageDialog(this, message, "Validacao", JOptionPane.WARNING_MESSAGE);
     }
@@ -143,5 +173,15 @@ public class SensorMonitorFrame extends JFrame {
 
     private double parseNumber(String value) {
         return Double.parseDouble(value.trim().replace(',', '.'));
+    }
+
+    private String buildSimulationLabel(Sensor sensor) {
+        return "Simulacao: " +
+                (sensorRuntime.isSimulationRunning() ? "ativa" : "pausada") +
+                " | faixa automatica=[" +
+                format(sensor.getType().getSimulatedMinimum()) +
+                ", " +
+                format(sensor.getType().getSimulatedMaximum()) +
+                "]";
     }
 }

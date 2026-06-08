@@ -155,6 +155,7 @@ public class SensorDashboardFrame extends JFrame {
 
         tableModel.addSensor(createdSensor);
         SensorRuntime sensorRuntime = new SensorRuntime(createdSensor, alertPublisher);
+        sensorRuntime.addStateListener(() -> tableModel.notifySensorUpdated(createdSensor));
         sensorRuntimes.put(createdSensor.getId(), sensorRuntime);
         showSensorWindow(sensorRuntime);
         refreshClientWindowsTopics();
@@ -200,7 +201,10 @@ public class SensorDashboardFrame extends JFrame {
             sensorWindow.dispose();
         }
 
-        sensorRuntimes.remove(sensor.getId());
+        SensorRuntime sensorRuntime = sensorRuntimes.remove(sensor.getId());
+        if (sensorRuntime != null) {
+            sensorRuntime.stopSimulation();
+        }
         tableModel.removeSensor(selectedRow);
         refreshClientWindowsTopics();
         updateStatusLabel();
@@ -363,6 +367,11 @@ public class SensorDashboardFrame extends JFrame {
             sensorWindow.dispose();
         }
         sensorWindows.clear();
+
+        for (SensorRuntime sensorRuntime : sensorRuntimes.values()) {
+            sensorRuntime.stopSimulation();
+        }
+        sensorRuntimes.clear();
 
         for (ClientMonitorFrame clientWindow : clientWindows.values()) {
             clientWindow.dispose();
