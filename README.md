@@ -9,6 +9,8 @@ recebidas.
 - Java 17
 - Permissão para executar `mvnw`
 - Conexão com a internet na primeira execução, caso as dependências Maven ainda não estejam em cache
+- Se o projeto foi obtido por `.zip`, confirme que a pasta oculta `.mvn/` foi extraída junto com os arquivos do projeto
+- Se a máquina não tiver Maven instalado globalmente, o comando `mvn` não estará disponível para recriar o wrapper
 
 ## Como executar
 
@@ -24,13 +26,40 @@ cd /caminho/para/mom-proj
 chmod +x mvnw
 ```
 
-3. Compile o projeto:
+3. Confirme que o Maven Wrapper está completo:
+
+```bash
+ls -la .mvn/wrapper
+```
+
+O comando acima deve listar o arquivo `maven-wrapper.properties`. Se a pasta `.mvn/` não existir, a cópia do projeto
+está incompleta e o `mvnw` não vai funcionar. Nesse caso, obtenha o projeto novamente ou, se já tiver Maven instalado na
+máquina, recrie o wrapper com:
+
+```bash
+mvn -N wrapper:wrapper
+```
+
+Se o terminal retornar `command not found: mvn`, instale o Maven primeiro. No macOS com Homebrew:
+
+```bash
+brew install maven
+mvn -v
+```
+
+Depois disso, volte para a pasta do projeto e execute novamente:
+
+```bash
+mvn -N wrapper:wrapper
+```
+
+4. Compile o projeto:
 
 ```bash
 ./mvnw clean compile
 ```
 
-4. Execute a aplicação:
+5. Execute a aplicação:
 
 ```bash
 ./mvnw exec:java
