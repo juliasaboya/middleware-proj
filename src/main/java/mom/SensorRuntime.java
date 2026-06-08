@@ -20,7 +20,6 @@ public class SensorRuntime {
     private final Timer simulationTimer;
 
     private String lastStatusMessage = "Leitura dentro da faixa configurada.";
-    private String lastAlertType;
 
     public SensorRuntime(Sensor sensor, SensorAlertPublisher alertPublisher) {
         this.sensor = sensor;
@@ -85,12 +84,7 @@ public class SensorRuntime {
     private String publishThresholdAlertIfNeeded() {
         String alertType = resolveAlertType();
         if (alertType == null) {
-            lastAlertType = null;
             return "Leitura dentro da faixa configurada.";
-        }
-
-        if (alertType.equals(lastAlertType)) {
-            return "Leitura fora da faixa configurada.";
         }
 
         try {
@@ -98,12 +92,10 @@ public class SensorRuntime {
             String detail = "MAXIMUM_REACHED".equals(alertType) ? "maximo atingido" : "minimo atingido";
             String statusMessage = "Alerta enviado para o topico " + topicName + ".";
             addHistoryDetail("Broker notificado: " + detail);
-            lastAlertType = alertType;
             return statusMessage;
         } catch (Exception exception) {
             String statusMessage = "Falha ao publicar alerta: " + exception.getMessage();
             addHistoryDetail(statusMessage);
-            lastAlertType = alertType;
             return statusMessage;
         }
     }
